@@ -1,0 +1,15 @@
+
+app:
+  env: "production"
+
+server:
+  port: 8080
+
+db:
+  path: "/tmp/metrics.db"
+
+security:
+  cors_origin: "https://yourdomain.pl"
+
+otlp:
+  enabled: true

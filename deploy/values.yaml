@@ -1,0 +1,19 @@
+replicaCount: 1
+image:
+  repository: ghcr.io/webx/metrics-pro
+  tag: "v2.2.1-go"
+resources:
+  requests: {cpu: "300m", memory: "256Mi"}
+  limits: {cpu: "1000m", memory: "512Mi"}
+volumeMounts:
+- name: tmp
+  mountPath: /tmp
+volumes:
+- name: tmp
+  emptyDir:
+    medium: Memory
+    sizeLimit: 256Mi
+env:
+- {name: APP_ENV, value: "production"}
+- {name: PORT, value: "8080"}
+- {name: DB_PATH, value: "/tmp/metrics.db"}

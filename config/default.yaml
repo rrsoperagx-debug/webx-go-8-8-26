@@ -1,0 +1,35 @@
+
+app:
+  name: "webx-metrics-pro-go"
+  version: "2.2.1"
+  env: "development"
+
+server:
+  host: "0.0.0.0"
+  port: 8080
+  timeout_secs: 5
+  body_limit_mb: 5
+  concurrency_limit: 512
+  read_timeout_secs: 10
+  write_timeout_secs: 10
+
+db:
+  path: "./data/metrics.db"
+  max_connections: 10
+  key: "dev_key_32_chars_long____________"
+
+security:
+  cors_origin: "*"
+  jwt_secret: "change_me_in_prod_32_chars_minimum_go"
+  jwt_expiry_hours: 24
+
+features:
+  use_vacuum_v2: true
+  enable_pprof: false
+
+otlp:
+  endpoint: "http://otel-collector:4317"
+  enabled: false
+
+metrics:
+  namespace: "webx"

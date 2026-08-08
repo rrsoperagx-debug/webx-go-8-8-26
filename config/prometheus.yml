@@ -1,0 +1,8 @@
+
+global:
+  scrape_interval: 15s
+scrape_configs:
+  - job_name: 'webx-metrics-pro-go'
+    static_configs:
+      - targets: ['webx:8080']
+    metrics_path: '/metrics'

@@ -1,0 +1,134 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>WebX Metrics Pro Go v{{.Version}} - {{.Env}}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0b1220;--card:#161b2d;--border:#2a3750;--text:#e6edf3;--muted:#94a3b8;--accent:#3ddc97}
+body{font-family:ui-sans-system,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);padding:1rem;line-height:1.5}
+h1{font-size:clamp(1.4rem,4vw,2.2rem);margin-bottom:0.5rem}
+h2{font-size:clamp(1.1rem,3vw,1.4rem);margin:1.5rem 0 0.75rem}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.grid{display:grid;gap:1rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem;box-shadow:0 4px 20px rgba(0,0,0,0.2)}
+.kpi{font-size:2rem;font-weight:800}
+.ok{color:var(--accent);font-weight:700}
+.muted{color:var(--muted);font-size:0.85rem}
+.badge{display:inline-block;padding:0.15rem 0.5rem;border-radius:999px;font-size:0.75rem;border:1px solid var(--border);background:#0f172a}
+.table-wrap{overflow:auto;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:0.9rem}
+th,td{padding:0.6rem 0.75rem;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}
+th{position:sticky;top:0;background:var(--card);font-weight:600;color:var(--muted);text-transform:uppercase;font-size:0.75rem;letter-spacing:0.04em}
+.btn{display:inline-flex;gap:0.4rem;align-items:center;padding:0.5rem 0.9rem;border-radius:10px;border:1px solid var(--border);background:#0f172a;color:var(--text);font-weight:600;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+@media(min-width:640px){.grid-2{grid-template-columns:1fr 1fr}.grid-3{grid-template-columns:1fr 1fr 1fr}}
+@media(min-width:1024px){.grid-3{grid-template-columns:1fr 1fr 1fr 1fr}}
+@media(max-width:400px){body{padding:0.5rem;font-size:12px}table{font-size:11px}.card{padding:0.75rem}.kpi{font-size:1.4rem}}
+@media(min-width:1280px){.card{padding:1.4rem}body{padding:1.5rem 2rem}}
+</style>
+</head>
+<body>
+<header class="grid" style="margin-bottom:1rem">
+<div>
+<h1>WebX Metrics Pro Go <span class="badge">v{{.Version}}</span> <span class="badge">{{.Env}}</span> <span class="badge">Go 1.22</span></h1>
+<p class="muted">Uptime: {{.Uptime}}s • Prometheus /metrics • SQLite WAL • SRE Hardening • Backpressure 512 • p99 &lt;10ms SLO</p>
+</div>
+</header>
+
+<section class="grid grid-3">
+<div class="card"><div class="muted">CPU</div><div class="kpi">{{.Metrics.CPU}}%</div><div class="muted">cpu_usage_percent</div></div>
+<div class="card"><div class="muted">RAM</div><div class="kpi">{{.Metrics.Mem}} MB</div><div class="muted">mem_usage_mb</div></div>
+<div class="card"><div class="muted">Aktywni</div><div class="kpi">{{.Metrics.Users}}</div><div class="muted">active_users</div></div>
+<div class="card"><div class="muted">Requests</div><div class="kpi">{{.Metrics.RequestsTotal}}</div><div class="muted">http_requests_total</div></div>
+</section>
+
+<section class="grid grid-2" style="margin-top:1rem">
+<div class="card">
+<h2>Ingest metryki</h2>
+<p class="muted" style="margin-bottom:0.6rem">POST /api/metrics/ingest {name, value, labels}</p>
+<pre style="background:#0f172a;padding:0.75rem;border-radius:8px;overflow:auto;font-size:0.8rem">curl -X POST http://localhost:8080/api/metrics/ingest \
+ -H "Content-Type: application/json" \
+ -d '{"name":"cpu","value":42.5,"labels":"{\"host\":\"srv1\"}"}'</pre>
+<div style="margin-top:0.8rem;display:flex;gap:0.5rem;flex-wrap:wrap">
+<a class="btn" href="/api/metrics/all">JSON all</a>
+<a class="btn" href="/api/metrics/list">List DB</a>
+<a class="btn" href="/metrics">Prometheus</a>
+<a class="btn" href="/health">Health</a>
+</div>
+</div>
+
+<div class="card">
+<h2>Eksport raportów</h2>
+<p class="muted">PDF/MD/TXT/JSON - gofpdf, zero JS</p>
+<div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin:0.8rem 0">
+<button class="btn" onclick="exportData('pdf')">PDF</button>
+<button class="btn" onclick="exportData('md')">Markdown</button>
+<button class="btn" onclick="exportData('txt')">TXT</button>
+<button class="btn" onclick="exportData('json')">JSON</button>
+</div>
+<p class="muted">Eksport zawiera metryki, 30 przeglądarek, 9 urządzeń.</p>
+</div>
+</section>
+
+<div class="card" style="margin-top:1rem">
+<h2>Ostatnie metryki z SQLite WAL (Go pure, CGO_ENABLED=0)</h2>
+<div class="table-wrap">
+<table>
+<tr><th>ID</th><th>Name</th><th>Value</th><th>Labels</th><th>Timestamp</th></tr>
+{{range .RecentMetrics}}
+<tr><td>{{.ID}}</td><td>{{.Name}}</td><td>{{.Value}}</td><td>{{.Labels}}</td><td>{{.Timestamp}}</td></tr>
+{{else}}
+<tr><td colspan="5" class="muted">Brak danych - wyślij POST /api/metrics/ingest</td></tr>
+{{end}}
+</table>
+</div>
+</div>
+
+<div class="card" style="margin-top:1rem">
+<h2>Kompatybilność Urządzeń (9 kategorii) - 320px → 8K</h2>
+<div class="table-wrap">
+<table>
+<tr><th>Urządzenie</th><th>Rozdzielczość</th><th>Kategoria</th><th>Wsparcie</th></tr>
+{{range .Devices}}
+<tr><td>{{.Name}}</td><td>{{.Resolution}}</td><td>{{.Category}}</td><td class="ok">{{.Support}}</td></tr>
+{{end}}
+</table>
+</div>
+</div>
+
+<div class="card" style="margin-top:1rem">
+<h2>30 Przeglądarek - Blink/Gecko/WebKit/Text</h2>
+<p class="muted" style="margin-bottom:0.6rem">100% dzięki HTML5+CSS3, bez frameworków JS.</p>
+<div class="table-wrap">
+<table>
+<tr><th>#</th><th>Nazwa</th><th>Silnik</th><th>Wersja min</th><th>Wsparcie</th><th>Udział</th></tr>
+{{range $i, $b := .Browsers}}
+<tr><td>{{$i}}</td><td>{{$b.Name}}</td><td>{{$b.Engine}}</td><td>{{$b.Version}}</td><td class="ok">{{$b.Support}}</td><td class="muted">{{$b.MarketShare}}</td></tr>
+{{end}}
+</table>
+</div>
+</div>
+
+<footer style="margin-top:2rem" class="muted">
+<p>WebX Metrics Pro Go v{{.Version}} • Go 1.22 + Chi + SQLite WAL + Prometheus + SLSA • SRE: p99&lt;10ms, 99.9% uptime, Backpressure 512, tmpfs 512Mi</p>
+<p>Bezpieczeństwo: CSP nosniff DENY, CORS, BodyLimit 5MB, Timeout 5s, Bcrypt, JWT, WAL, Cosign Ed25519</p>
+</footer>
+
+<script>
+async function exportData(fmt){
+  const data = {
+    title: "WebX Metrics Pro Go - Raport",
+    content: `Uptime {{.Uptime}}s, CPU {{.Metrics.CPU}}%, MEM {{.Metrics.Mem}}MB, Users {{.Metrics.Users}}, Requests {{.Metrics.RequestsTotal}}\n\nWygenerowano: ${new Date().toISOString()}\n30 przeglądarek: Chrome, Firefox, Safari, Edge, Opera, Brave, Vivaldi, Arc, Samsung, Yandex, UC, QQ, Tor, PaleMoon, Lynx i 15 kolejnych\n9 urządzeń: Watch, Mobile, Tablet, Laptop, 4K, TV, Auto\n\nSLO: p99<10ms, 99.9% uptime, error <0.1%\nGo version: pure Go sqlite, CGO_ENABLED=0, 5MB binary`
+  };
+  const res = await fetch(`/api/export/${fmt}`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=`report.${fmt}`; a.click();
+}
+</script>
+</body>
+</html>

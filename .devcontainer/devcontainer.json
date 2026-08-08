@@ -1,0 +1,22 @@
+{
+  "name": "webx-metrics-pro-go",
+  "image": "mcr.microsoft.com/devcontainers/go:1-1.22-bullseye",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["golang.go","github.copilot","github.copilot-chat"],
+      "settings": {"editor.formatOnSave": true}
+    }
+  },
+  "forwardPorts": [8080,9090,4317],
+  "portsAttributes": {
+    "8080": {"label": "WebX Go","onAutoForward": "openBrowser"},
+    "9090": {"label": "Prometheus","onAutoForward": "notify"}
+  },
+  "postCreateCommand": "mkdir -p data && go mod tidy && go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && go install golang.org/x/vuln/cmd/govulncheck@latest || true",
+  "postStartCommand": "go build -o /tmp/webx ./cmd/server || true",
+  "remoteUser": "vscode"
+}

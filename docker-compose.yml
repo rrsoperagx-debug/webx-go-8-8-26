@@ -1,0 +1,31 @@
+
+version: '3.8'
+services:
+  webx:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - APP_ENV=development
+      - DB_PATH=/tmp/metrics.db
+      - JWT_SECRET=dev_secret_32_chars_minimum_change_in_prod
+      - CORS_ORIGIN=*
+      - LOG_LEVEL=info
+    tmpfs:
+      - /tmp:size=512M,mode=1777
+    volumes:
+      - ./templates:/app/templates:ro
+      - ./config:/app/config:ro
+    healthcheck:
+      test: ["CMD", "/app/webx-metrics-pro", "--healthcheck"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
