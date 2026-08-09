@@ -88,12 +88,12 @@ func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	mv := models.MetricsView{
-		CPU:           metrics.CPUUsage.Get(),
-		Mem:           metrics.MemUsage.Get(),
-		Users:         metrics.ActiveUsers.Get(),
+		CPU:           metrics.GetCPUUsage(),
+		Mem:           metrics.GetMemUsage(),
+		Users:         metrics.GetActiveUsers(),
 		RPS:           42.0,
-		RequestsTotal: metrics.RequestsTotal.Get(),
-		ErrorsTotal:   metrics.ErrorsTotal.Get(),
+		RequestsTotal: metrics.GetRequestsTotal(),
+		ErrorsTotal:   metrics.GetErrorsTotal(),
 	}
 
 	data := map[string]interface{}{
@@ -136,13 +136,13 @@ func (h *Handler) Health(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) AllMetrics(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"cpu_percent":      metrics.CPUUsage.Get(),
-		"mem_mb":           metrics.MemUsage.Get(),
-		"active_users":     metrics.ActiveUsers.Get(),
-		"requests_total":   metrics.RequestsTotal.Get(),
-		"errors_total":     metrics.ErrorsTotal.Get(),
-		"metrics_ingested": metrics.MetricsIngested.Get(),
-		"in_flight":        metrics.InFlight.Get(),
+		"cpu_percent":      metrics.GetCPUUsage(),
+		"mem_mb":           metrics.GetMemUsage(),
+		"active_users":     metrics.GetActiveUsers(),
+		"requests_total":   metrics.GetRequestsTotal(),
+		"errors_total":     metrics.GetErrorsTotal(),
+		"metrics_ingested": metrics.GetMetricsIngested(),
+		"in_flight":        metrics.GetInFlight(),
 		"uptime_seconds":   metrics.UptimeSeconds(),
 		"timestamp":        time.Now().UTC().Format(time.RFC3339),
 	})

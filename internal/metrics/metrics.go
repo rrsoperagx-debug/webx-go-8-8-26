@@ -54,6 +54,15 @@ var (
 	})
 
 	startTime = time.Now()
+
+	// Tracked values for reading metrics
+	cpuValue    float64
+	memValue    float64
+	usersValue  float64
+	requestsVal float64
+	errorsVal   float64
+	metricsVal  float64
+	inflightVal float64
 )
 
 func Init() {
@@ -61,9 +70,14 @@ func Init() {
 	go func() {
 		ticker := time.NewTicker(5 * time.Second)
 		for range ticker.C {
-			CPUUsage.Set(rand.Float64()*30 + 10)
-			MemUsage.Set(rand.Float64()*200 + 100)
-			ActiveUsers.Set(rand.Float64()*500 + 50)
+			cpuValue = rand.Float64()*30 + 10
+			CPUUsage.Set(cpuValue)
+			
+			memValue = rand.Float64()*200 + 100
+			MemUsage.Set(memValue)
+			
+			usersValue = rand.Float64()*500 + 50
+			ActiveUsers.Set(usersValue)
 		}
 	}()
 }
@@ -74,4 +88,49 @@ func Uptime() time.Duration {
 
 func UptimeSeconds() float64 {
 	return time.Since(startTime).Seconds()
+}
+
+// Helper functions to get metric values
+func GetCPUUsage() float64 {
+	return cpuValue
+}
+
+func GetMemUsage() float64 {
+	return memValue
+}
+
+func GetActiveUsers() float64 {
+	return usersValue
+}
+
+func GetRequestsTotal() float64 {
+	return requestsVal
+}
+
+func GetErrorsTotal() float64 {
+	return errorsVal
+}
+
+func GetMetricsIngested() float64 {
+	return metricsVal
+}
+
+func GetInFlight() float64 {
+	return inflightVal
+}
+
+func SetRequestsTotal(v float64) {
+	requestsVal = v
+}
+
+func SetErrorsTotal(v float64) {
+	errorsVal = v
+}
+
+func SetMetricsIngested(v float64) {
+	metricsVal = v
+}
+
+func SetInFlight(v float64) {
+	inflightVal = v
 }
